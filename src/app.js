@@ -1,6 +1,6 @@
 import express from  "express";
 import cors from "cors"
-// to perform crud on cookies of use browser from server
+// to perform crud on cookies of user browser from server
 import cookieParser from "cookie-parser";
 const app = express();
 
@@ -23,4 +23,10 @@ app.use(express.urlencoded({extended: true, limit:"16kb"}))
 app.use(express.static("public"))
 app.use(cookieParser())
 
+//routes import
+import userRouter from "./routes/user.routes.js"
+
+
+//routes declaration
+app.use("/api/v1/users",userRouter)
 export {app}
