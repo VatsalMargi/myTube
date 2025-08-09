@@ -33,3 +33,36 @@ export const uploadOnCloudinary = async (localFilePath) => {
         return null;
     }
 }
+
+function getPublicId(url) {
+    const afterUpload = url.split('/upload/')[1];
+    const parts = afterUpload.split('/');
+    
+    // Remove version number (v12345)
+    if (parts[0].startsWith('v') && !isNaN(parts[0].substring(1))) {
+      parts.shift();
+    }
+    
+    // Remove file extension from last part
+    const lastPart = parts.pop().split('.')[0];
+    parts.push(lastPart);
+    
+    return parts.join('/');
+  }
+
+export const deleteFromCloudinary = async(cloudinaryUrl)=>{
+    try {
+        if(!cloudinaryUrl) return null;
+
+        const publicId = getPublicId(imageUrl);
+
+        const response = cloudinary.v2.uploader.destroy(publicId, {
+            resource_type: "auto"
+        })
+
+        return response;
+    } catch (error) {
+        console.error(`Couldn't delete previous image ${error}`);
+        return null;
+    }
+}

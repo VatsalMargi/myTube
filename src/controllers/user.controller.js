@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.model.js";
-import {uploadOnCloudinary} from "../utils/cloudinary.js"
+import {uploadOnCloudinary, deleteFromCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 
@@ -289,9 +289,9 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
         if(!avatar.url){
             throw new ApiError(500, "Error while uploading avatar")
         }
-    
+        const user = await User.findById(req.user?._id).select("avatar");
         const updatedUser = await User.findByIdAndUpdate(
-    
+            
             req.user?._id,
             {
                 $set:{
@@ -299,8 +299,10 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
                 }
             },
             {new: true}
-        ).select("-password -refreshToken")
-        // TODO: delete utitlity after uploading the new image
+            ).select("-password -refreshToken")
+            // TODO: delete utitlity after uploading the new image
+            deleteFromCloudinary(user?.avatar);
+
         return res
         .status(200)
         .json(new ApiResponse(200,updatedUser,"Avatar updated successfully"))
@@ -318,12 +320,12 @@ const updateUserCoverImage = asyncHandler(async(req,res)=>{
             throw new ApiError(400, "Avatar file is coverImage")
         }
     
-        const coverImage = await uploadOnCloudinary(avatarLocalPath)
+        const coverImage = await uploadOnCloudinary(coverImageLocalPath)
     
-        if(!avatar.url){
+        if(!coverImage.url){
             throw new ApiError(500, "Error while uploading coverImage")
         }
-    
+        const user = await User.findById(req.user?._id).select("coverImage");
         const updatedUser = await User.findByIdAndUpdate(
     
             req.user?._id,
@@ -334,7 +336,9 @@ const updateUserCoverImage = asyncHandler(async(req,res)=>{
             },
             {new: true}
         ).select("-password -refreshToken")
-    
+     // TODO: delete utitlity after uploading the new image
+        deleteFromCloudinary(user?.coverImage);
+     
         return res
         .status(200)
         .json(new ApiResponse(200,updatedUser,"coverImage updated successfully"))
